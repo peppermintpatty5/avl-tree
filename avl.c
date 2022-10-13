@@ -17,6 +17,11 @@ struct node
     long value;
 };
 
+/**
+ * Replace node x with node y. Only node y may be null.
+ */
+static void replace_node(struct node *x, struct node *y);
+
 AvlTree *avltree_new(void)
 {
     AvlTree *tree = malloc(sizeof(*tree));
@@ -102,51 +107,58 @@ void avltree_add(AvlTree *tree, long elem)
 void avltree_remove(AvlTree *tree, long elem)
 {
     // find node to delete
-    struct node *rm = tree->root;
+    struct node *x = tree->root;
 
-    while (rm != NULL)
+    while (x != NULL)
     {
-        if (elem == rm->value)
+        if (elem == x->value)
             break;
 
-        rm = elem < rm->value ? rm->left : rm->right;
+        x = elem < x->value ? x->left : x->right;
     }
 
     // delete node, if exists
-    if (rm != NULL)
+    if (x != NULL)
     {
-        struct node *replace;
+        struct node *y = NULL;
 
-        // find replacement
-        if (rm->left != NULL)
+        if (x->left != NULL)
         {
-            replace = rm->left;
+            y = x->left;
 
-            while (replace->right != NULL)
-                replace = replace->right;
-        }
-        else
-        {
-            replace = rm->right;
-        }
+            while (y->right != NULL)
+                y = y->right;
 
-        // make replacement
-        if (replace != NULL)
-            replace->parent = rm->parent;
-
-        if (rm->parent != NULL)
-        {
-            if (rm == rm->parent->left)
-                rm->parent->left = replace;
+            if (y == x->left)
+                x->left = y->left;
             else
-                rm->parent->right = replace;
+                y->parent->right = y->left;
+
+            if (y->left != NULL)
+                y->left->parent = y->parent;
         }
-        else
+        else if (x->right != NULL)
         {
-            tree->root = replace;
+            y = x->right;
+
+            while (y->left != NULL)
+                y = y->left;
+
+            if (y == x->right)
+                x->right = y->right;
+            else
+                y->parent->left = y->right;
+
+            if (y->right != NULL)
+                y->right->parent = y->parent;
         }
 
-        free(rm);
+        replace_node(x, y);
+
+        if (x->parent == NULL)
+            tree->root = y;
+
+        free(x);
         tree->size--;
     }
 }
@@ -190,4 +202,27 @@ void avltree_debug(AvlTree *tree)
 {
     debug_json(tree->root);
     putchar('\n');
+}
+
+void replace_node(struct node *x, struct node *y)
+{
+    struct node *p = x->parent,
+                *l = x->left,
+                *r = x->right;
+
+    if (p != NULL)
+        *(x == p->left ? &p->left : &p->right) = y;
+
+    if (l != NULL)
+        l->parent = y;
+
+    if (r != NULL)
+        r->parent = y;
+
+    if (y != NULL)
+    {
+        y->parent = p;
+        y->left = l;
+        y->right = r;
+    }
 }

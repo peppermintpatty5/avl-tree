@@ -51,28 +51,28 @@ void avltree_delete(AvlTree *tree)
     again.
     */
 
-    struct node *curr = tree->root;
+    struct node *x = tree->root;
 
-    while (curr != NULL)
+    while (x != NULL)
     {
-        if (curr->left != NULL)
-            curr = curr->left;
-        else if (curr->right != NULL)
-            curr = curr->right;
+        if (x->left != NULL)
+            x = x->left;
+        else if (x->right != NULL)
+            x = x->right;
         else
         {
-            struct node *p = curr->parent;
+            struct node *p = x->parent;
 
             if (p != NULL)
             {
-                if (curr == p->left)
+                if (x == p->left)
                     p->left = NULL;
                 else
                     p->right = NULL;
             }
 
-            free(curr);
-            curr = p;
+            free(x);
+            x = p;
         }
     }
 
@@ -89,7 +89,7 @@ void avltree_add(AvlTree *tree, long elem)
     empty tree.
     */
 
-    struct node **dst = &tree->root, *x = tree->root;
+    struct node **dst = &tree->root, *x = NULL;
 
     while (*dst != NULL)
     {
@@ -168,14 +168,14 @@ void avltree_remove(AvlTree *tree, long elem)
 
 bool avltree_contains(AvlTree *tree, long elem)
 {
-    struct node *curr = tree->root;
+    struct node *x = tree->root;
 
-    while (curr != NULL)
+    while (x != NULL)
     {
-        if (elem == curr->value)
+        if (elem == x->value)
             return true;
 
-        curr = elem < curr->value ? curr->left : curr->right;
+        x = elem < x->value ? x->left : x->right;
     }
     return false;
 }
@@ -209,17 +209,17 @@ void avltree_debug(AvlTree *tree)
 
 struct node *new_node(long value)
 {
-    struct node *n = malloc(sizeof(*n));
+    struct node *x = malloc(sizeof(*x));
 
-    if (n != NULL)
+    if (x != NULL)
     {
-        n->parent = NULL;
-        n->left = NULL;
-        n->right = NULL;
-        n->value = value;
+        x->parent = NULL;
+        x->left = NULL;
+        x->right = NULL;
+        x->value = value;
     }
 
-    return n;
+    return x;
 }
 
 void replace_node(struct node *x, struct node *y)

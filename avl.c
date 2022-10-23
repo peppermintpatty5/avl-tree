@@ -42,6 +42,15 @@ AvlTree *avltree_new(void)
 
 void avltree_delete(AvlTree *tree)
 {
+    /*
+    Iteratively free all the nodes in the tree. A post-order traversal is used
+    to free a node's children first.
+
+    The structure of the tree itself is used for backtracking. By setting a
+    node's left/right pointer to null, that subtree will be not be visited
+    again.
+    */
+
     struct node *curr = tree->root;
 
     while (curr != NULL)

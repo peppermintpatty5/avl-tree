@@ -18,6 +18,11 @@ struct node
 };
 
 /**
+ * Create a new node with the given value that has no parent or children.
+ */
+static struct node *new_node(long value);
+
+/**
  * Replace node x with node y. Only node y may be null.
  */
 static void replace_node(struct node *x, struct node *y);
@@ -67,39 +72,28 @@ void avltree_delete(AvlTree *tree)
 
 void avltree_add(AvlTree *tree, long elem)
 {
-    struct node *new_node;
+    /*
+    Find the node `x` which is to become the parent of the new node.
 
-    // find where to insert new node
-    struct node *prev = NULL, *curr = tree->root;
+    The double pointer `dst` is used to keep track of which side of `x` to
+    update. Conveniently, this also handles updating the root pointer of an
+    empty tree.
+    */
 
-    while (curr != NULL)
+    struct node **dst = &tree->root, *x = tree->root;
+
+    while (*dst != NULL)
     {
+        x = *dst;
+
         // element is already present
-        if (elem == curr->value)
+        if (elem == x->value)
             return;
 
-        prev = curr;
-        curr = elem < curr->value ? curr->left : curr->right;
+        dst = elem < x->value ? &x->left : &x->right;
     }
 
-    new_node = malloc(sizeof(*new_node));
-    new_node->parent = prev;
-    new_node->left = NULL;
-    new_node->right = NULL;
-    new_node->value = elem;
-
-    if (prev != NULL)
-    {
-        if (elem < prev->value)
-            prev->left = new_node;
-        else
-            prev->right = new_node;
-    }
-    else
-    {
-        // new_node is the only node in the tree
-        tree->root = new_node;
-    }
+    (*dst = new_node(elem))->parent = x;
 
     tree->size++;
 }
@@ -202,6 +196,21 @@ void avltree_debug(AvlTree *tree)
 {
     debug_json(tree->root);
     putchar('\n');
+}
+
+struct node *new_node(long value)
+{
+    struct node *n = malloc(sizeof(*n));
+
+    if (n != NULL)
+    {
+        n->parent = NULL;
+        n->left = NULL;
+        n->right = NULL;
+        n->value = value;
+    }
+
+    return n;
 }
 
 void replace_node(struct node *x, struct node *y)
